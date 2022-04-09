@@ -587,9 +587,7 @@ def test_unify(polar, qeval):
             self.foo = foo
 
         def __eq__(self, other):
-            if isinstance(other, Foo):
-                return self.foo == other.foo
-            return False
+            return self.foo == other.foo if isinstance(other, Foo) else False
 
     polar.register_class(Foo)
 
@@ -783,10 +781,7 @@ def test_method_with_kwargs(polar, qvar):
 def unwrap_and(x):
     assert isinstance(x, Expression)
     assert x.operator == "And"
-    if len(x.args) == 1:
-        return x.args[0]
-    else:
-        return x.args
+    return x.args[0] if len(x.args) == 1 else x.args
 
 
 def test_partial_unification(polar):
@@ -912,7 +907,7 @@ def test_iterators(polar, qeval, qvar):
 
     class Bar(list):
         def sum(self):
-            return sum(x for x in self)
+            return sum(self)
 
     polar.register_class(Bar)
     assert qvar("x in new Bar([1, 2, 3])", "x") == [1, 2, 3]

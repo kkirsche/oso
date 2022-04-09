@@ -78,13 +78,12 @@ class Query:
     def handle_make_external(self, data):
         id = data["instance_id"]
         constructor = data["constructor"]["value"]
-        if "Call" in constructor:
-            cls_name = constructor["Call"]["name"]
-            args = [self.host.to_python(arg) for arg in constructor["Call"]["args"]]
-            kwargs = constructor["Call"]["kwargs"] or {}
-            kwargs = {k: self.host.to_python(v) for k, v in kwargs.items()}
-        else:
+        if "Call" not in constructor:
             raise InvalidConstructorError()
+        cls_name = constructor["Call"]["name"]
+        args = [self.host.to_python(arg) for arg in constructor["Call"]["args"]]
+        kwargs = constructor["Call"]["kwargs"] or {}
+        kwargs = {k: self.host.to_python(v) for k, v in kwargs.items()}
         self.host.make_instance(cls_name, args, kwargs, id)
 
     def handle_relation(self, instance, rel):
@@ -133,14 +132,12 @@ class Query:
             self.ffi_query.application_error(str(e))
             self.ffi_query.call_result(call_id, None)
             return
-        if (
-            callable(attr) and not data["args"] is None
-        ):  # If it's a function, call it with the args.
+        if callable(attr) and data["args"] is not None:  # If it's a function, call it with the args.
             args = [self.host.to_python(arg) for arg in data["args"]]
             kwargs = data["kwargs"] or {}
             kwargs = {k: self.host.to_python(v) for k, v in kwargs.items()}
             result = attr(*args, **kwargs)
-        elif not data["args"] is None:
+        elif data["args"] is not None:
             raise InvalidCallError(
                 f"tried to call '{attribute}' but it is not callable"
             )

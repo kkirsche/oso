@@ -152,25 +152,29 @@ def test_resource_mapping(polar, register_classes, load_policy, query):
 
     @app.route("/widget/<int:id>")
     def get_widget(id):
-        if not query(
-            Predicate(
-                name="allow",
-                args=[g.user, request.method.lower(), Http(path=request.path)],
+        return (
+            Response("Ok", status=204)
+            if query(
+                Predicate(
+                    name="allow",
+                    args=[g.user, request.method.lower(), Http(path=request.path)],
+                )
             )
-        ):
-            return Response("Denied", status=403)
-        return Response("Ok", status=204)
+            else Response("Denied", status=403)
+        )
 
     @app.route("/widget/", methods=["POST"])
     def create_widget():
-        if not query(
-            Predicate(
-                name="allow",
-                args=[g.user, request.method.lower(), Http(path=request.path)],
+        return (
+            Response("Ok", status=204)
+            if query(
+                Predicate(
+                    name="allow",
+                    args=[g.user, request.method.lower(), Http(path=request.path)],
+                )
             )
-        ):
-            return Response("Denied", status=403)
-        return Response("Ok", status=204)
+            else Response("Denied", status=403)
+        )
 
     with app.test_client() as client:
         resp = client.get("/widget/1", headers=[("username", "guest")])

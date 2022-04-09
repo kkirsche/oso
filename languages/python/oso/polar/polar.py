@@ -60,7 +60,7 @@ class Polar:
             path = Path(filename)
             extension = path.suffix
             filename = str(path)
-            if not extension == ".polar":
+            if extension != ".polar":
                 raise PolarFileExtensionError(filename)
 
             try:
@@ -101,14 +101,13 @@ class Polar:
     def check_inline_queries(self):
         while True:
             query = self.ffi_polar.next_inline_query()
-            if query is None:  # Load is done
+            if query is None:
                 break
-            else:
-                try:
-                    next(Query(query, host=self.host.copy()).run())
-                except StopIteration:
-                    source = query.source()
-                    raise InlineQueryFailedError(source)
+            try:
+                next(Query(query, host=self.host.copy()).run())
+            except StopIteration:
+                source = query.source()
+                raise InlineQueryFailedError(source)
 
     def clear_rules(self):
         self.ffi_polar.clear_rules()
@@ -130,8 +129,7 @@ class Polar:
         else:
             raise InvalidQueryTypeError()
 
-        for res in Query(query, host=host, bindings=bindings).run():
-            yield res
+        yield from Query(query, host=host, bindings=bindings).run()
 
     def query_rule(self, name, *args, **kwargs):
         """Query for rule with name ``name`` and arguments ``args``.
