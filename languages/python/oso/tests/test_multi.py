@@ -22,14 +22,13 @@ def r():
 
 def exhaust(i):
     try:
-        for _ in i:
-            pass
+        pass
     except OsoError:
         pass
 
 
 def torch_oso(oso):
-    for i in range(ITERS):
+    for _ in range(ITERS):
         x = X(r())
         y = X(r())
         exhaust(oso.query_rule("equal", x, y))
@@ -49,12 +48,6 @@ def test_multi():
 
     tp = ThreadPoolExecutor(max_workers=8)
 
-    futures = []
-    for _ in range(32):
-        futures.append(tp.submit(torch_oso, oso))
-
-    for i, future in enumerate(concurrent.futures.as_completed(futures)):
+    futures = [tp.submit(torch_oso, oso) for _ in range(32)]
+    for future in concurrent.futures.as_completed(futures):
         future.result()
-
-    # If we got here none of these crashed.
-    assert True

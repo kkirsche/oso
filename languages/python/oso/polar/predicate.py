@@ -15,10 +15,12 @@ class Predicate:
         return f'{self.name}({", ".join(self.args)})'
 
     def __eq__(self, other):
-        if not isinstance(other, Predicate):
-            return False
         return (
-            self.name == other.name
-            and len(self.args) == len(other.args)
-            and all(x == y for x, y in zip(self.args, other.args))
+            (
+                self.name == other.name
+                and len(self.args) == len(other.args)
+                and all(x == y for x, y in zip(self.args, other.args))
+            )
+            if isinstance(other, Predicate)
+            else False
         )

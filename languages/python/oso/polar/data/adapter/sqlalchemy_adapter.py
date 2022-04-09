@@ -39,10 +39,10 @@ class SqlAlchemyAdapter(DataAdapter):
     def execute_query(self, query):
         return query.all()
 
-    def sqlize(cond):
-        op = cond.cmp
-        lhs = SqlAlchemyAdapter.add_side(cond.left)
-        rhs = SqlAlchemyAdapter.add_side(cond.right)
+    def sqlize(self):
+        op = self.cmp
+        lhs = SqlAlchemyAdapter.add_side(self.left)
+        rhs = SqlAlchemyAdapter.add_side(self.right)
         if op == "Eq":
             return lhs == rhs
         elif op == "Neq":
@@ -52,12 +52,12 @@ class SqlAlchemyAdapter(DataAdapter):
         elif op == "Nin":
             return lhs not in rhs
 
-    def add_side(side):
-        if isinstance(side, Projection):
-            source = side.source
-            field = side.field or inspect(source).primary_key[0].name
+    def add_side(self):
+        if isinstance(self, Projection):
+            source = self.source
+            field = self.field or inspect(source).primary_key[0].name
             return getattr(source, field)
-        elif inspect(type(side), raiseerr=False) is not None:
-            return getattr(side, inspect(type(side)).primary_key[0].name)
+        elif inspect(type(self), raiseerr=False) is not None:
+            return getattr(self, inspect(type(self)).primary_key[0].name)
         else:
-            return side
+            return self
